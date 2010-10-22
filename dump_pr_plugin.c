@@ -1,0 +1,228 @@
+/*
+ * Copyright (c) 2010 Mellanox Technologies LTD. All rights reserved.
+ *
+ * This software is available to you under a choice of one of two
+ * licenses.  You may choose to be licensed under the terms of the GNU
+ * General Public License (GPL) Version 2, available from the file
+ * COPYING in the main directory of this source tree, or the
+ * OpenIB.org BSD license below:
+ *
+ *     Redistribution and use in source and binary forms, with or
+ *     without modification, are permitted provided that the following
+ *     conditions are met:
+ *
+ *      - Redistributions of source code must retain the above
+ *        copyright notice, this list of conditions and the following
+ *        disclaimer.
+ *
+ *      - Redistributions in binary form must reproduce the above
+ *        copyright notice, this list of conditions and the following
+ *        disclaimer in the documentation and/or other materials
+ *        provided with the distribution.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+ * BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+ * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ */
+
+#if HAVE_CONFIG_H
+#  include <config.h>
+#endif				/* HAVE_CONFIG_H */
+
+#include <errno.h>
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <time.h>
+#include <dlfcn.h>
+#include <stdint.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <complib/cl_qmap.h>
+#include <complib/cl_passivelock.h>
+#include <opensm/osm_version.h>
+#include <opensm/osm_opensm.h>
+#include <opensm/osm_log.h>
+
+#define DUMP_PR_FILENAME "opensm-path-records.dump"
+
+typedef struct _path_parms {
+	ib_net16_t pkey;
+	uint8_t mtu;
+	uint8_t rate;
+	uint8_t sl;
+	uint8_t pkt_life;
+	boolean_t reversible;
+} path_parms_t;
+
+extern ib_api_status_t
+osm_get_path_params(IN osm_sa_t * sa,
+		    IN const osm_port_t * p_src_port,
+		    IN const osm_port_t * p_dest_port,
+		    IN const uint16_t dlid_ho,
+		    OUT path_parms_t * p_parms);
+
+/*****************************************************************************/
+
+static FILE *
+open_file(osm_opensm_t *p_osm, const char *file_name)
+{
+	char path[1024];
+	FILE *file;
+
+	if (*file_name == '/')
+		/* file name was provided as an absolute path */
+		snprintf(path, sizeof(path), "%s", file_name);
+	else
+		/* file name is relative to dump_files_dir */
+		snprintf(path, sizeof(path), "%s/%s",
+			 p_osm->subn.opt.dump_files_dir, file_name);
+
+	OSM_LOG(&p_osm->log, OSM_LOG_DEBUG, "Opening PR dump file: %s\n", path);
+	file = fopen(path, "w");
+	if (!file) {
+		OSM_LOG(&p_osm->log, OSM_LOG_ERROR, "ERR PR01: "
+			"cannot open file \'%s\': %s\n",
+			file_name, strerror(errno));
+		return NULL;
+	}
+
+	chmod(path, S_IRUSR | S_IWUSR);
+
+	return file;
+}
+
+/*****************************************************************************/
+
+static void
+close_file(FILE * file)
+{
+	if (file)
+		fclose(file);
+}
+
+/*****************************************************************************/
+
+static void dump_path_records(osm_opensm_t *p_osm)
+{
+	osm_port_t *p_src_port;
+	osm_port_t *p_dest_port;
+	osm_node_t *p_node;
+	uint16_t dlid_ho;
+	uint32_t vector_size;
+	osm_physp_t *p_physp;
+	path_parms_t path_parms;
+	ib_api_status_t status;
+
+	OSM_LOG_ENTER(&p_osm->log);
+
+	FILE * file = open_file(p_osm, DUMP_PR_FILENAME);
+	if (!file) {
+		OSM_LOG(&p_osm->log, OSM_LOG_ERROR, "ERR PR02: "
+			"Dumping PR file failed - couldn't open dump file\n");
+		goto Exit;
+	}
+
+
+	vector_size = cl_ptr_vector_get_size(&p_osm->subn.port_lid_tbl);
+	for (p_src_port = (osm_port_t *) cl_qmap_head(&p_osm->subn.port_guid_tbl);
+	     p_src_port != (osm_port_t *) cl_qmap_end(&p_osm->subn.port_guid_tbl);
+	     p_src_port = (osm_port_t *) cl_qmap_next(&p_src_port->map_item)) {
+
+		p_node = p_src_port->p_node;
+		if (p_node->node_info.node_type == IB_NODE_TYPE_SWITCH)
+			continue;
+
+		p_physp = p_src_port->p_physp;
+		CL_ASSERT(p_physp->p_remote_physp);
+
+		fprintf(file, "%s 0x%016" PRIx64 ", base LID %d, "
+			"\"%s\", port %d\n# LID  : SL : MTU : RATE\n",
+			ib_get_node_type_str(p_node->node_info.node_type),
+			cl_ntoh64(p_src_port->guid),
+			cl_ntoh16(osm_port_get_base_lid(p_src_port)),
+			p_node->print_desc, p_physp->port_num);
+
+		memset(&path_parms, 0, sizeof(path_parms_t));
+
+		for (dlid_ho = 1; dlid_ho < vector_size; dlid_ho++) {
+
+			p_dest_port = (osm_port_t *) cl_ptr_vector_get(
+				&p_osm->subn.port_lid_tbl, dlid_ho);
+
+			if (!p_dest_port || !p_dest_port->p_node ||
+			    p_dest_port->p_node->node_info.node_type ==
+			    IB_NODE_TYPE_SWITCH)
+			continue;
+
+			status = osm_get_path_params(&p_osm->sa,
+				p_src_port, p_dest_port, dlid_ho,
+				(void*)&path_parms);
+
+			if (!status)
+				fprintf(file, "0x%04X : %-2d : %-3d : %-4d\n",
+					dlid_ho, path_parms.sl,
+					path_parms.mtu, path_parms.rate);
+			else
+				fprintf(file, "0x%04X : UNREACHABLE\n",
+					dlid_ho);
+		}
+		fprintf(file, "\n");
+	}
+Exit:
+	close_file(file);
+	OSM_LOG_EXIT(&p_osm->log);
+}
+
+/*****************************************************************************/
+
+static void *construct(osm_opensm_t *p_osm)
+{
+	if (p_osm->subn.opt.event_plugin_options)
+		OSM_LOG(&p_osm->log, OSM_LOG_INFO,
+			"Dumping PR file plugin option: \"%s\"\n",
+			p_osm->subn.opt.event_plugin_options);
+	return (void *)p_osm;
+}
+
+/*****************************************************************************/
+
+static void destroy(void *p_osm)
+{
+	/* nothing to destroy - we didn't allocate anything */
+}
+
+/*****************************************************************************/
+
+static void report(void *_osm, osm_epi_event_id_t event_id, void *event_data)
+{
+	osm_opensm_t *p_osm = (osm_opensm_t*)_osm;
+	if (event_id == OSM_EVENT_ID_SUBNET_UP ||
+	    event_id == OSM_EVENT_ID_REROUTE_DONE) {
+		OSM_LOG(&p_osm->log, OSM_LOG_VERBOSE, "Dump PR: %s reported\n",
+			(event_id == OSM_EVENT_ID_SUBNET_UP) ?
+			"Subnet Up" : "Re-route Done");
+			dump_path_records(p_osm);
+	}
+}
+
+/*****************************************************************************
+ * Define the object symbol for loading
+ */
+
+#if OSM_EVENT_PLUGIN_INTERFACE_VER != 2
+#error OpenSM plugin interface version missmatch
+#endif
+
+osm_event_plugin_t osm_event_plugin = {
+      osm_version:OSM_VERSION,
+      create:construct,
+      delete:destroy,
+      report:report
+};

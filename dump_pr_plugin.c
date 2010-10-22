@@ -117,6 +117,7 @@ static void get_peer_sls(osm_opensm_t * p_osm, FILE * file,
 	osm_port_t *p_src_port, *p_dest_port;
 	path_parms_t path_parms;
 	ib_api_status_t status;
+	int num_sls = 0;
 	uint8_t last_sl = 0xff;
 	uint8_t src_port_num, dest_port_num;
 
@@ -159,10 +160,17 @@ static void get_peer_sls(osm_opensm_t * p_osm, FILE * file,
 					sw_dlid_ho, path_parms.sl,
 					sw2sw_path_parms->mtu,
 					sw2sw_path_parms->rate);
-				return;
+				/* At most 2 different SLs (qos-levels) */
+				if (++num_sls == 2)
+					return;
 			}
 		}
 	}
+
+	if (!num_sls)
+		fprintf(file, "0x%04X : %-2d : %-3d : %-4d\n",
+			sw_dlid_ho, sw2sw_path_parms->sl,
+			sw2sw_path_parms->mtu, sw2sw_path_parms->rate);
 }
 
 /*****************************************************************************/

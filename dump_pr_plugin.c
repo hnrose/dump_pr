@@ -69,7 +69,6 @@ osm_get_path_params(IN osm_sa_t * sa,
 		    OUT path_parms_t * p_parms);
 
 /*****************************************************************************/
-
 static FILE *
 open_file(osm_opensm_t *p_osm, const char *file_name)
 {
@@ -99,7 +98,6 @@ open_file(osm_opensm_t *p_osm, const char *file_name)
 }
 
 /*****************************************************************************/
-
 static void
 close_file(FILE * file)
 {
@@ -108,14 +106,12 @@ close_file(FILE * file)
 }
 
 /*****************************************************************************/
-
 static void dump_path_records(osm_opensm_t *p_osm)
 {
-	osm_port_t *p_src_port;
-	osm_port_t *p_dest_port;
+	osm_port_t *p_src_port, *p_dest_port;
 	osm_node_t *p_node;
 	uint16_t dlid_ho;
-	uint32_t vector_size;
+	size_t vector_size;
 	osm_physp_t *p_physp;
 	path_parms_t path_parms;
 	ib_api_status_t status;
@@ -128,7 +124,6 @@ static void dump_path_records(osm_opensm_t *p_osm)
 			"Dumping PR file failed - couldn't open dump file\n");
 		goto Exit;
 	}
-
 
 	vector_size = cl_ptr_vector_get_size(&p_osm->subn.port_lid_tbl);
 	for (p_src_port = (osm_port_t *) cl_qmap_head(&p_osm->subn.port_guid_tbl);
@@ -163,7 +158,7 @@ static void dump_path_records(osm_opensm_t *p_osm)
 
 			status = osm_get_path_params(&p_osm->sa,
 				p_src_port, p_dest_port, dlid_ho,
-				(void*)&path_parms);
+				(void *)&path_parms);
 
 			if (!status)
 				fprintf(file, "0x%04X : %-2d : %-3d : %-4d\n",
@@ -175,13 +170,12 @@ static void dump_path_records(osm_opensm_t *p_osm)
 		}
 		fprintf(file, "\n");
 	}
-Exit:
 	close_file(file);
+Exit:
 	OSM_LOG_EXIT(&p_osm->log);
 }
 
 /*****************************************************************************/
-
 static void *construct(osm_opensm_t *p_osm)
 {
 	if (p_osm->subn.opt.event_plugin_options)
@@ -192,22 +186,21 @@ static void *construct(osm_opensm_t *p_osm)
 }
 
 /*****************************************************************************/
-
 static void destroy(void *p_osm)
 {
 	/* nothing to destroy - we didn't allocate anything */
 }
 
 /*****************************************************************************/
-
 static void report(void *_osm, osm_epi_event_id_t event_id, void *event_data)
 {
-	osm_opensm_t *p_osm = (osm_opensm_t*)_osm;
+	osm_opensm_t *p_osm = (osm_opensm_t *)_osm;
+
 	if (event_id == OSM_EVENT_ID_SUBNET_UP ||
-	    event_id == OSM_EVENT_ID_REROUTE_DONE) {
+	    event_id == OSM_EVENT_ID_UCAST_ROUTING_DONE) {
 		OSM_LOG(&p_osm->log, OSM_LOG_VERBOSE, "Dump PR: %s reported\n",
 			(event_id == OSM_EVENT_ID_SUBNET_UP) ?
-			"Subnet Up" : "Re-route Done");
+			"Subnet Up" : "Routing Done");
 			dump_path_records(p_osm);
 	}
 }

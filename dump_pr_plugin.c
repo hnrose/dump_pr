@@ -249,11 +249,12 @@ static void dump_path_records(osm_opensm_t * p_osm)
 				cl_ntoh16(osm_port_get_base_lid(p_src_port)),
 				p_node->print_desc, p_physp->port_num);
 		if (file2 && p_node->node_info.node_type != IB_NODE_TYPE_SWITCH)
-			fprintf(file2, "%s 0x%016" PRIx64 ", base LID %d, "
+			fprintf(file2, "%s 0x%016" PRIx64 ", base LID %d, LMC %d, "
 				"\"%s\", port %d\n# LID  : MTU : RATE\n",
 				ib_get_node_type_str(p_node->node_info.node_type),
 				cl_ntoh64(p_src_port->guid),
 				cl_ntoh16(osm_port_get_base_lid(p_src_port)),
+				ib_port_info_get_lmc(&p_physp->port_info),
 				p_node->print_desc, p_physp->port_num);
 		if (file3 &&
 		    p_node->node_info.node_type == IB_NODE_TYPE_SWITCH)
@@ -302,16 +303,6 @@ static void dump_path_records(osm_opensm_t * p_osm)
 				if (file &&
 				    p_node->node_info.node_type != IB_NODE_TYPE_SWITCH)
 					fprintf(file, "0x%04X : UNREACHABLE\n",
-						dlid_ho);
-				if (file2 &&
-                                    p_node->node_info.node_type != IB_NODE_TYPE_SWITCH &&
-                                    p_physp->p_remote_physp->p_node == p_dest_port->p_node)
-					fprintf(file2, "0x%04X : UNREACHABLE\n",
-						dlid_ho);
-				if (file3 &&
-				    p_node->node_info.node_type == IB_NODE_TYPE_SWITCH &&
-				    p_dest_port->p_node->node_info.node_type == IB_NODE_TYPE_SWITCH)
-					fprintf(file3, "0x%04X : UNREACHABLE\n",
 						dlid_ho);
 			}
 		}

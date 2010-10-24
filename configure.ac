@@ -37,6 +37,18 @@ AC_INIT([cc_mgr_plugin],[1.0])
 AC_CONFIG_SRCDIR([])
 
 
+dnl Define an input config option to control osm
+AC_ARG_WITH(osm,
+[  --with-osm=<dir> define OSM library directory],
+AC_MSG_NOTICE(Using OSM from: $with_osm),
+with_osm="none")
+OSM_PATH=
+if test "x$with_osm" != xnone; then
+  OSM_PATH=$with_osm
+fi
+AC_SUBST(OSM_PATH)
+
+
 dnl use local config dir for extras
 AC_CONFIG_AUX_DIR(config)
 

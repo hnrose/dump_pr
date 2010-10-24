@@ -40,7 +40,7 @@ AC_ARG_WITH(osm,
 [  --with-osm=<dir> define OSM library directory],
 AC_MSG_NOTICE(Using OSM from: $with_osm),
 with_osm="none")
-OSM_PATH=
+OSM_PATH=/usr
 if test "x$with_osm" != xnone; then
   OSM_PATH=$with_osm
 fi

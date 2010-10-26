@@ -32,7 +32,7 @@
 
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT([cc_mgr_plugin],[1.0])
+AC_INIT([dump_pr],[1.0])
 AC_CONFIG_SRCDIR([])
 
 dnl Define an input config option to control osm

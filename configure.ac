@@ -95,7 +95,7 @@ AC_C_INLINE
 dnl Checks for library functions.
 AC_CHECK_FUNCS([strchr strstr strtol strtoull regcomp regexec])
 
-AC_CONFIG_FILES([dump_pr_plugin.spec])
+AC_CONFIG_FILES([dump_pr.spec])
 
 dnl Create the following Makefiles
 AC_OUTPUT(Makefile)

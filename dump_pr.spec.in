@@ -1,11 +1,7 @@
 #--
 # Copyright (c) 2010 Mellanox Technologies LTD. All rights reserved.
 #
-# This software is available to you under a choice of one of two
-# licenses.  You may choose to be licensed under the terms of the GNU
-# General Public License (GPL) Version 2, available from the file
-# COPYING in the main directory of this source tree, or the
-# OpenIB.org BSD license below:
+# This software is available to you under the OpenIB.org BSD license below:
 #
 #     Redistribution and use in source and binary forms, with or
 #     without modification, are permitted provided that the following
@@ -30,22 +26,54 @@
 # SOFTWARE.
 #--
 
-# Makefile.am -- Process this file with automake to produce Makefile.in
+%define _enable_debug --enable-debug
 
-SUBDIRS = . 
+Summary: Dump PathRecord Plugin
+Name: dump_pr
+Version: @VERSION@
+Release: 1
+License: TBD
+#Url:
+Group: System Environment/Libraries
+Source: %{name}-%{version}.tar.gz
+BuildRoot: %{_tmppath}/%{name}-%{version}-build
+#Requires: opensm
+Vendor: Mellanox Technologies Ltd.
 
-INCLUDES = -I. -I$(OSM_PATH)/include/infiniband
+%description
+Dump PathRecord plugin dumps the SA path records.
+The output files are dependent on an environment
+variable and the routing protocol in use.
 
-AM_CFLAGS = -Wall -Werror -fPIC -g
+%prep
+%setup -n %{name}-%{version}
 
-LDADD =
+%build
+%{configure} %{configure_options}
 
-dump_pr_api_version=$(shell \grep LIBVERSION= $(srcdir)/libdump_pr.ver | sed 's/LIBVERSION=//')
-libdump_pr_la_LDFLAGS = -version-info $(dump_pr_api_version) -export-dynamic
-libdump_pr_la_SOURCES = $(srcdir)/dump_pr_plugin.c
 
-lib_LTLIBRARIES = libdump_pr.la
+#export CFLAGS="$RPM_OPT_FLAGS"
+%{__make}
 
-#libdump_pr_la_CFLAGS = 
-#libdump_pr_la_LDFLAGS = -static
-#libdump_pr_la_SOURCES = $(topsrcdir)/src/dump_pr_plugin.c
+
+%install
+%{__make} install DESTDIR=$RPM_BUILD_ROOT
+rm -f ${RPM_BUILD_ROOT}/%{_libdir}/libdump_pr.a
+rm -f ${RPM_BUILD_ROOT}/%{_libdir}/libdump_pr.la
+
+
+%clean
+rm -rf ${RPM_BUILD_ROOT}
+rm -rf ${RPM_BUILD_DIR}/%{name}-%{version}
+
+
+%files
+%defattr(-,root,root)
+#%doc COPYING
+%{_libdir}/libdump_pr.so*
+# END Files
+
+
+%changelog
+* Fri Oct 22 2010 - Hal Rosenstock <hal@mellanox.com>
+- Initial package

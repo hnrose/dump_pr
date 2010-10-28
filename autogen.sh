@@ -50,6 +50,7 @@ fi
 # cleanup
 find . \( -name Makefile.in -o -name aclocal.m4 -o -name autom4te.cache -o -name configure -o -name aclocal.m4 \) -exec \rm -rf {} \; -prune
 
+mkdir -p config/
 aclocal -I config && \
 libtoolize --force --copy && \
 autoheader && \

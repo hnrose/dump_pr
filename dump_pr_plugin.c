@@ -226,14 +226,10 @@ static void dump_path_records(osm_opensm_t * p_osm)
 	     p_src_port = (osm_port_t *) cl_qmap_next(&p_src_port->map_item)) {
 
 		p_node = p_src_port->p_node;
-		if (p_node->node_info.node_type == IB_NODE_TYPE_SWITCH &&
-		    !is_opt_pr_dump)
-			continue;
-
 		p_physp = p_src_port->p_physp;
 		CL_ASSERT(p_physp->p_remote_physp);
 
-		if (file && p_node->node_info.node_type != IB_NODE_TYPE_SWITCH)
+		if (file)
 			fprintf(file, "%s 0x%016" PRIx64 ", base LID %d, "
 				"\"%s\", port %d\n# LID  : SL : MTU : RATE\n",
 				ib_get_node_type_str(p_node->node_info.node_type),
@@ -264,17 +260,13 @@ static void dump_path_records(osm_opensm_t * p_osm)
 
 			if (!p_dest_port || !p_dest_port->p_node)
 				continue;
-			if (p_dest_port->p_node->node_info.node_type ==
-			    IB_NODE_TYPE_SWITCH && !is_opt_pr_dump)
-				continue;
 
 			status = osm_get_path_params(&p_osm->sa,
 				p_src_port, p_dest_port, dlid_ho,
 				(void *)&path_parms);
 
 			if (!status) {
-				if (file &&
-				    p_node->node_info.node_type != IB_NODE_TYPE_SWITCH)
+				if (file)
 					fprintf(file, "0x%04X : %-2d : %-3d : %-4d\n",
 						dlid_ho, path_parms.sl,
 						path_parms.mtu, path_parms.rate);

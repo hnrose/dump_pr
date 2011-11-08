@@ -94,7 +94,7 @@ open_file(osm_opensm_t * p_osm, const char * file_name)
 		return NULL;
 	}
 
-	chmod(path, S_IRUSR | S_IWUSR);
+	chmod(path, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 
 	return file;
 }

@@ -66,6 +66,7 @@ typedef struct _path_parms {
 extern ib_api_status_t
 osm_get_path_params(IN osm_sa_t * sa,
 		    IN const osm_port_t * p_src_port,
+		    IN const uint16_t slid_ho,
 		    IN const osm_port_t * p_dest_port,
 		    IN const uint16_t dlid_ho,
 		    OUT path_parms_t * p_parms);
@@ -150,7 +151,9 @@ static void get_peer_sls(osm_opensm_t * p_osm, FILE * file,
 			CL_ASSERT(p_dest_port);
 
 			status = osm_get_path_params(&p_osm->sa,
-						     p_src_port, p_dest_port,
+						     p_src_port,
+						     cl_ntoh16(osm_physp_get_base_lid(p_src_rem_physp)),
+						     p_dest_port,
 						     cl_ntoh16(osm_physp_get_base_lid(p_dest_rem_physp)),
 						     (void *)&path_parms);
 
@@ -170,7 +173,7 @@ static void dump_path_records(osm_opensm_t * p_osm)
 {
 	osm_port_t *p_src_port, *p_dest_port;
 	osm_node_t *p_node;
-	uint16_t dlid_ho;
+	uint16_t slid_ho, dlid_ho;
 	size_t vector_size;
 	osm_physp_t *p_physp;
 	char *full_pr_dump;
@@ -228,28 +231,26 @@ static void dump_path_records(osm_opensm_t * p_osm)
 		p_node = p_src_port->p_node;
 		p_physp = p_src_port->p_physp;
 		CL_ASSERT(p_physp->p_remote_physp);
+		slid_ho = cl_ntoh16(osm_port_get_base_lid(p_src_port));
 
 		if (file)
 			fprintf(file, "%s 0x%016" PRIx64 ", base LID %d, "
 				"\"%s\", port %d\n# LID  : SL : MTU : RATE\n",
 				ib_get_node_type_str(p_node->node_info.node_type),
-				cl_ntoh64(p_src_port->guid),
-				cl_ntoh16(osm_port_get_base_lid(p_src_port)),
+				cl_ntoh64(p_src_port->guid), slid_ho,
 				p_node->print_desc, p_physp->port_num);
 		if (file2 && p_node->node_info.node_type != IB_NODE_TYPE_SWITCH)
 			fprintf(file2, "%s 0x%016" PRIx64 ", base LID %d, LMC %d, "
 				"\"%s\", port %d\n# LID  : MTU : RATE\n",
 				ib_get_node_type_str(p_node->node_info.node_type),
-				cl_ntoh64(p_src_port->guid),
-				cl_ntoh16(osm_port_get_base_lid(p_src_port)),
+				cl_ntoh64(p_src_port->guid), slid_ho,
 				ib_port_info_get_lmc(&p_physp->port_info),
 				p_node->print_desc, p_physp->port_num);
 		if (file3 && p_node->node_info.node_type == IB_NODE_TYPE_SWITCH)
 			fprintf(file3, "%s 0x%016" PRIx64 ", base LID %d, "
 				"\"%s\", port %d\n# LID  : SL : MTU : RATE\n",
 				ib_get_node_type_str(p_node->node_info.node_type),
-				cl_ntoh64(p_src_port->guid),
-				cl_ntoh16(osm_port_get_base_lid(p_src_port)),
+				cl_ntoh64(p_src_port->guid), slid_ho,
 				p_node->print_desc, p_physp->port_num);
 
 		for (dlid_ho = 1; dlid_ho < vector_size; dlid_ho++) {
@@ -261,7 +262,7 @@ static void dump_path_records(osm_opensm_t * p_osm)
 				continue;
 
 			status = osm_get_path_params(&p_osm->sa,
-						     p_src_port,
+						     p_src_port, slid_ho,
 						     p_dest_port, dlid_ho,
 						     (void *)&path_parms);
 

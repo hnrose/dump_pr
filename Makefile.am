@@ -36,7 +36,7 @@ SUBDIRS = .
 
 INCLUDES = -I. -I$(OSM_PATH)/include/infiniband
 
-AM_CFLAGS = -Wall -Werror -fPIC -g
+AM_CFLAGS = -Wall -Werror -fPIC -g -DENABLE_OSM_PERF_MGR
 
 LDADD =
 

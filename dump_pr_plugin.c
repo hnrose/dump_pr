@@ -214,7 +214,7 @@ static void dump_path_records(osm_opensm_t * p_osm)
 		}
 		file3 = open_file(p_osm, DUMP_SW2SW_FILENAME);
 		if (!file3) {
-			OSM_LOG(&p_osm->log, OSM_LOG_ERROR, "ERR PR04L "
+			OSM_LOG(&p_osm->log, OSM_LOG_ERROR, "ERR PR04: "
 				"Dumping PR file failed - couldn't open switch to switch dump file\n");
 			goto Exit;
 		}
@@ -244,8 +244,7 @@ static void dump_path_records(osm_opensm_t * p_osm)
 				cl_ntoh16(osm_port_get_base_lid(p_src_port)),
 				ib_port_info_get_lmc(&p_physp->port_info),
 				p_node->print_desc, p_physp->port_num);
-		if (file3 &&
-		    p_node->node_info.node_type == IB_NODE_TYPE_SWITCH)
+		if (file3 && p_node->node_info.node_type == IB_NODE_TYPE_SWITCH)
 			fprintf(file3, "%s 0x%016" PRIx64 ", base LID %d, "
 				"\"%s\", port %d\n# LID  : SL : MTU : RATE\n",
 				ib_get_node_type_str(p_node->node_info.node_type),
@@ -262,8 +261,9 @@ static void dump_path_records(osm_opensm_t * p_osm)
 				continue;
 
 			status = osm_get_path_params(&p_osm->sa,
-				p_src_port, p_dest_port, dlid_ho,
-				(void *)&path_parms);
+						     p_src_port,
+						     p_dest_port, dlid_ho,
+						     (void *)&path_parms);
 
 			if (!status) {
 				if (file)
@@ -330,7 +330,7 @@ static void report(void *_osm, osm_epi_event_id_t event_id, void *event_data)
 		OSM_LOG(&p_osm->log, OSM_LOG_VERBOSE, "Dump PR: %s reported\n",
 			(event_id == OSM_EVENT_ID_SUBNET_UP) ?
 			"Subnet Up" : "Routing Done");
-			dump_path_records(p_osm);
+		dump_path_records(p_osm);
 	}
 }
 

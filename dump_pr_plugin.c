@@ -184,6 +184,8 @@ static void dump_path_records(osm_opensm_t * p_osm)
 
 	OSM_LOG_ENTER(&p_osm->log);
 
+	OSM_LOG(&p_osm->log, OSM_LOG_VERBOSE, "Dumping PR Started\n");
+
 	if (p_osm->routing_engine_used &&
 	    p_osm->routing_engine_used->type == OSM_ROUTING_ENGINE_TYPE_TORUS_2QOS)
 		is_opt_pr_dump = 1;
@@ -261,6 +263,16 @@ static void dump_path_records(osm_opensm_t * p_osm)
 			if (!p_dest_port || !p_dest_port->p_node)
 				continue;
 
+			if ((!file && 
+				!(file2 &&
+				p_node->node_info.node_type != IB_NODE_TYPE_SWITCH &&
+				p_physp->p_remote_physp->p_node == p_dest_port->p_node) &&
+				!(file3 &&
+				p_node->node_info.node_type == IB_NODE_TYPE_SWITCH &&
+				p_dest_port->p_node->node_info.node_type == IB_NODE_TYPE_SWITCH)))
+				continue;
+
+
 			status = osm_get_path_params(&p_osm->sa,
 						     p_src_port, slid_ho,
 						     p_dest_port, dlid_ho,
@@ -302,6 +314,9 @@ Exit:
 	close_file(file3);
 	close_file(file2);
 	close_file(file);
+
+	OSM_LOG(&p_osm->log, OSM_LOG_VERBOSE, "Dumping PR Ended\n");
+
 	OSM_LOG_EXIT(&p_osm->log);
 }
 

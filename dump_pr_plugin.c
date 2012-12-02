@@ -115,9 +115,9 @@ close_file(FILE * file)
 static void
 write_file_header(FILE * file, const char * version, osm_opensm_t * p_osm)
 {
-	fprintf(file, "# version: %s\n", version);
+	fprintf(file, "version: %s\n", version);
 	if (p_osm->routing_engine_used)
-		fprintf(file, "# routing_engine: %s\n",
+		fprintf(file, "routing_engine: %s\n",
 			osm_routing_engine_type_str(p_osm->routing_engine_used->type));
 	fprintf(file, "\n");
 }
@@ -236,7 +236,6 @@ static void dump_path_records(osm_opensm_t * p_osm)
 				"Dumping PR file failed - couldn't open dump file\n");
 			goto Exit;
 		}
-		write_file_header(file, DUMP_PR_FILEVERSION, p_osm);
 	}
 
 	if (is_opt_pr_dump) {
@@ -246,7 +245,6 @@ static void dump_path_records(osm_opensm_t * p_osm)
 				"Dumping PR file failed - couldn't open peer dump file\n");
 			goto Exit;
 		}
-		write_file_header(file2, DUMP_PR_FILEVERSION, p_osm);
 
 		file3 = open_file(p_osm, DUMP_SW2SW_FILENAME);
 		if (!file3) {

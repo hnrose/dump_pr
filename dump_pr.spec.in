@@ -1,5 +1,5 @@
 #--
-# Copyright (c) 2010 Mellanox Technologies LTD. All rights reserved.
+# Copyright (c) 2010-2012 Mellanox Technologies LTD. All rights reserved.
 #
 # This software is available to you under the OpenIB.org BSD license below:
 #
@@ -32,7 +32,7 @@ Summary: Dump PathRecord Plugin
 Name: dump_pr
 Version: @VERSION@
 Release: 1
-License: TBD
+License: GPLv2 or BSD
 #Url:
 Group: System Environment/Libraries
 Source: %{name}-%{version}.tar.gz

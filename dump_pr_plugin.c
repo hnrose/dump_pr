@@ -259,7 +259,8 @@ static void dump_path_records(osm_opensm_t * p_osm)
 
 		p_node = p_src_port->p_node;
 		p_physp = p_src_port->p_physp;
-		CL_ASSERT(p_physp->p_remote_physp);
+		CL_ASSERT(p_node->node_info.node_type == IB_NODE_TYPE_SWITCH ||
+			  p_physp->p_remote_physp);
 		slid_ho = cl_ntoh16(osm_port_get_base_lid(p_src_port));
 
 		if (file)

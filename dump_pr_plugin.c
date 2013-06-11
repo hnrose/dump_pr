@@ -54,6 +54,7 @@
 #define DUMP_PEER_FILENAME "opensm-peer-paths.dump"
 #define DUMP_SW2SW_FILENAME "opensm-sw2sw-path-records.dump"
 
+/*
 typedef struct _path_parms {
 	ib_net16_t pkey;
 	uint8_t mtu;
@@ -70,6 +71,7 @@ osm_get_path_params(IN osm_sa_t * sa,
 		    IN const osm_port_t * p_dest_port,
 		    IN const uint16_t dlid_ho,
 		    OUT path_parms_t * p_parms);
+*/
 
 /*****************************************************************************/
 static FILE *
@@ -109,14 +111,24 @@ close_file(FILE * file)
 }
 
 /*****************************************************************************/
+#if 0
 static void get_peer_sls(osm_opensm_t * p_osm, FILE * file,
 			 uint16_t sw_dlid_ho, path_parms_t * sw2sw_path_parms,
 			 osm_switch_t * p_src_sw, osm_switch_t * p_dest_sw)
+#else
+static void get_peer_sls(osm_opensm_t * p_osm, FILE * file,
+			 uint16_t sw_dlid_ho, osm_path_parms_t * sw2sw_path_parms,
+			 osm_switch_t * p_src_sw, osm_switch_t * p_dest_sw)
+#endif
 {
 	osm_physp_t *p_src_physp, *p_dest_physp, *p_src_rem_physp, *p_dest_rem_physp;
 	osm_node_t *p_src_rem_node, *p_dest_rem_node;
 	osm_port_t *p_src_port, *p_dest_port;
+#if 0
 	path_parms_t path_parms;
+#else
+	osm_path_parms_t path_parms;
+#endif
 	ib_api_status_t status;
 	uint8_t last_sl = 0xff;
 	uint8_t src_port_num, dest_port_num;
@@ -179,7 +191,11 @@ static void dump_path_records(osm_opensm_t * p_osm)
 	char *full_pr_dump;
 	int is_full_pr_dump, is_opt_pr_dump;
 	FILE *file = NULL, *file2 = NULL, *file3 = NULL;
+#if 0
 	path_parms_t path_parms;
+#else
+	osm_path_parms_t path_parms;
+#endif
 	ib_api_status_t status;
 
 	OSM_LOG_ENTER(&p_osm->log);

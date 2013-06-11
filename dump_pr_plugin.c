@@ -361,6 +361,6 @@ static void report(void *_osm, osm_epi_event_id_t event_id, void *event_data)
 osm_event_plugin_t osm_event_plugin = {
       osm_version:OSM_VERSION,
       create:construct,
-      destroy:destroy,
+      delete:destroy,
       report:report
 };

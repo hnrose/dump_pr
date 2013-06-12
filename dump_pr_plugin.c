@@ -52,7 +52,7 @@
 #define DUMP_SW2SW_FILENAME "opensm-sw2sw-path-records.dump"
 #define DUMP_PR_FILEVERSION "1.0.0"
 
-/*
+#if 0
 typedef struct _path_parms {
 	ib_net16_t pkey;
 	uint8_t mtu;
@@ -69,7 +69,7 @@ osm_get_path_params(IN osm_sa_t * sa,
 		    IN const osm_port_t * p_dest_port,
 		    IN const uint16_t dlid_ho,
 		    OUT path_parms_t * p_parms);
-*/
+#endif
 
 /*****************************************************************************/
 static FILE *

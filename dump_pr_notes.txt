@@ -1,0 +1,102 @@
+Dump PathRecord Plugin for OpenSM (dump_pr)
+
+Overview
+--------
+dump_pr is a plugin for OpenSM which dumps SA PathRecords (PRs) for
+the subnet. There are two modes of operation which produce different
+output file formats. The output file formats include SL, MTU, and
+RATE PR parameters.
+
+If the OpenSM routing engine being used is torus-2QoS, then 2 files
+are produced as follows:
+opensm-peer-paths.dump: CA to peer switch PathRecord parameters 
+opensm-sw2sw-path-records.dump:  switch to switch PathRecord parameters
+
+Additionally, the DUMP_FULL_PATH_RECORDS environment variable controls
+outputting opensm-path-records.dump file. 
+
+The dump files are output to the dump_files directory which defaults
+to /var/log. This is configured in opensm.conf as follows:
+# The directory to hold the file OpenSM dumps
+dump_files_dir /var/log/
+
+Building & Installing
+---------------------
+Similar to other libraries, to build:
+./auutogen.sh && ./configure && make
+
+and to install:
+make install
+
+This produces and installs the dump_pr library.
+
+Running the dump_pr Plugin
+--------------------------
+In order to run OpenSM with the dump_pr plugin, the opensm.conf file needs
+the following modification:
+
+#
+# Event Plugin Options
+#
+# Event plugin name(s)
+#event_plugin_name (null)
+event_plugin_name dump_pr
+
+OpenSM will need to be restarted to invoke the plugin.
+
+If the "full" format is desired, the DUMP_FULL_PATH_RECORDS environment
+variable needs to be set to other than 0.
+
+As the plugin architecture for OpenSM uses dynamically loadable library
+mechanism, dump_pr must be consistent with version of OpenSM that is
+being used.
+
+If a message similar to the below is in the opensm.log:
+osm_epi_construct: Error loading plugin 'dump_pr': OpenSM version mismatch - plugin was built against OpenSM 3.3.16_1a94326 version of OpenSM. Skip loading. 
+then the dump_pr plugin is inconsistent with OpenSM and needs to be rebuilt
+and reinstalled for the running version of OpenSM.
+
+
+Sample Full Path Records File for a topology consisting of a single switch
+and 4 HCAs:
+
+Switch 0x0008f100010c005c, base LID 202, "Mellanox 2036 # 2036-005C", port 0
+# LID  : SL : MTU : RATE
+0x00CA : 0  : 5   : 7
+0x00CB : 0  : 4   : 6
+0x00F7 : 0  : 4   : 6
+0x00F8 : 0  : 4   : 6
+0x00F9 : 0  : 4   : 6
+
+Channel Adapter 0x0008f104039a0169, base LID 203, "luna3 HCA-1", port 1
+# LID  : SL : MTU : RATE
+0x00CA : 0  : 4   : 6
+0x00CB : 0  : 4   : 6
+0x00F7 : 0  : 4   : 6
+0x00F8 : 0  : 4   : 6
+0x00F9 : 0  : 4   : 6
+
+Channel Adapter 0x0008f104039a018d, base LID 247, "luna2 HCA-1", port 1
+# LID  : SL : MTU : RATE
+0x00CA : 0  : 4   : 6
+0x00CB : 0  : 4   : 6
+0x00F7 : 0  : 4   : 6
+0x00F8 : 0  : 4   : 6
+0x00F9 : 0  : 4   : 6
+
+Channel Adapter 0x0008f104039a019d, base LID 248, "luna1 HCA-1", port 1
+# LID  : SL : MTU : RATE
+0x00CA : 0  : 4   : 6
+0x00CB : 0  : 4   : 6
+0x00F7 : 0  : 4   : 6
+0x00F8 : 0  : 4   : 6
+0x00F9 : 0  : 4   : 6
+
+Channel Adapter 0x0008f104039a01a1, base LID 249, "luna4 HCA-1", port 1
+# LID  : SL : MTU : RATE
+0x00CA : 0  : 4   : 6
+0x00CB : 0  : 4   : 6
+0x00F7 : 0  : 4   : 6
+0x00F8 : 0  : 4   : 6
+0x00F9 : 0  : 4   : 6
+

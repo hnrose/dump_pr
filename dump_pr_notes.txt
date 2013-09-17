@@ -23,7 +23,7 @@ dump_files_dir /var/log/
 Building & Installing
 ---------------------
 Similar to other libraries, to build:
-./auutogen.sh && ./configure && make
+./autogen.sh && ./configure && make
 
 and to install:
 make install

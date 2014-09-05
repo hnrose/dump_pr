@@ -52,7 +52,8 @@
 #define DUMP_SW2SW_FILENAME "opensm-sw2sw-path-records.dump"
 #define DUMP_PR_FILEVERSION "1.0.0"
 
-#if 0
+#if 0	/* Now in osm_sa.h */
+/* Old structure */
 typedef struct _path_parms {
 	ib_net16_t pkey;
 	uint8_t mtu;

@@ -300,7 +300,6 @@ static void dump_path_records(osm_opensm_t * p_osm)
 				p_dest_port->p_node->node_info.node_type == IB_NODE_TYPE_SWITCH)))
 				continue;
 
-
 			status = osm_get_path_params(&p_osm->sa,
 						     p_src_port, slid_ho,
 						     p_dest_port, dlid_ho,

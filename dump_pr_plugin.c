@@ -40,10 +40,10 @@
 #include <stdint.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <opensm/osm_config.h>
 #include <complib/cl_qmap.h>
 #include <complib/cl_passivelock.h>
 #include <opensm/osm_version.h>
-#include <opensm/osm_config.h>
 #include <opensm/osm_opensm.h>
 #include <opensm/osm_log.h>
 

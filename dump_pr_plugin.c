@@ -260,8 +260,6 @@ static void dump_path_records(osm_opensm_t * p_osm)
 
 		p_node = p_src_port->p_node;
 		p_physp = p_src_port->p_physp;
-		CL_ASSERT(p_node->node_info.node_type == IB_NODE_TYPE_SWITCH ||
-			  p_physp->p_remote_physp);
 		slid_ho = cl_ntoh16(osm_port_get_base_lid(p_src_port));
 
 		if (file)
@@ -295,6 +293,7 @@ static void dump_path_records(osm_opensm_t * p_osm)
 			if ((!file && 
 				!(file2 &&
 				p_node->node_info.node_type != IB_NODE_TYPE_SWITCH &&
+				p_physp->p_remote_physp &&
 				p_physp->p_remote_physp->p_node == p_dest_port->p_node) &&
 				!(file3 &&
 				p_node->node_info.node_type == IB_NODE_TYPE_SWITCH &&
@@ -313,6 +312,7 @@ static void dump_path_records(osm_opensm_t * p_osm)
 						path_parms.mtu, path_parms.rate);
 				if (file2 &&
 				    p_node->node_info.node_type != IB_NODE_TYPE_SWITCH &&
+				    p_physp->p_remote_physp &&
 				    p_physp->p_remote_physp->p_node == p_dest_port->p_node)
 					fprintf(file2, "0x%04X : %-3d : %-4d\n\n",
 						dlid_ho, path_parms.mtu,

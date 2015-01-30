@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2014 Mellanox Technologies LTD. All rights reserved.
+ * Copyright (c) 2010-2015 Mellanox Technologies LTD. All rights reserved.
  *
  * This software is available to you under a choice of one of two
  * licenses.  You may choose to be licensed under the terms of the GNU
@@ -387,8 +387,8 @@ static void report(void *_osm, osm_epi_event_id_t event_id, void *event_data)
 #endif
 
 osm_event_plugin_t osm_event_plugin = {
-      osm_version:OSM_VERSION,
-      create:construct,
-      delete:destroy,
-      report:report
+      OSM_VERSION,
+      construct,
+      destroy,
+      report
 };
